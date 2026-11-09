@@ -25,6 +25,7 @@ The fence info string takes `width=`, `height=` and `theme=off`.
 
 From code:
 
+- `vegalite.chart({ rows | sql, mark?, x?, y?, color?, title?, sort?, width?, height?, spec? })` → `{ html, svg, spec, rows, rowCount, truncated }` without writing a spec: column types come from the values (text a category, numbers a quantity, ISO dates a time axis). `sql` runs read-only through the **duckdb** plugin when it is installed; `rows` needs nothing else.
 - `vegalite.render({ spec, width?, height?, theme? })` → `{ html, svg, sources, warnings }`. `spec` is an object or a JSON string; `sources` lists the data files it read.
 - `vegalite.readData({ path, format?, limit? })` → parsed rows of a local CSV/TSV/JSON/NDJSON file; the one way to see what a spec's `url` will actually get.
 - `vegalite.resolveDataPath({ path })` → the absolute path, or a throw if it leaves the data root.
@@ -169,7 +170,7 @@ With the **duckdb** plugin mounted and `vegalite.allowSqlData` on, a spec may sa
   "encoding": { "x": {"field": "level", "type": "nominal"}, "y": {"field": "n", "type": "quantitative"} } }
 ```
 
-It is off by default because DuckDB reads any file this server can, which deliberately escapes the data root. `duckdb.chart({ sql, x, y })` does the same thing from the other side and writes the spec for you.
+It is off by default because DuckDB reads any file this server can, which deliberately escapes the data root. `vegalite.chart({ sql, x, y })` does the same and writes the spec for you.
 
 ## Settings
 

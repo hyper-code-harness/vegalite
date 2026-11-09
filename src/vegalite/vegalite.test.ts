@@ -7,6 +7,7 @@ import dataRoot from "./dataRoot";
 import inlineData from "./inlineData";
 import readData from "./readData";
 import render from "./render";
+import chart from "./chart";
 import resolveDataPath from "./resolveDataPath";
 import theme from "./theme";
 import fence from "./$fence_vega-lite";
@@ -36,6 +37,7 @@ function makeCtx(settings: Record<string, unknown> = {}): Context {
         readData: (opts: any) => readData(self, null, opts),
         inlineData: (opts: any) => inlineData(self, null, opts),
         render: (opts: any) => render(self, null, opts),
+        chart: (opts: any) => chart(self, null, opts),
         theme: (opts: any = {}) => theme(self, null, opts),
     };
     return self as Context;
@@ -248,5 +250,27 @@ describe("vegalite executable fences", () => {
             await expect(fence(makeCtx({ allowEval: true }), null, { source, lang: "vega-lite", info: "eval" })).rejects.toThrow(/spec object/);
         }
         await expect(fence(makeCtx({ allowEval: true }), null, { source: "{ mark: await Promise.reject(new Error('query failed')) }", lang: "vega-lite", info: "eval" })).rejects.toThrow("query failed");
+    });
+});
+
+describe("vegalite.chart", () => {
+    test("charts inline rows without duckdb, typing columns from the values", async () => {
+        const result = await chart(makeCtx(), null, { rows: [{ day: "2026-01-02", n: 1, kind: "a" }, { day: "2026-01-03", n: 4, kind: "b" }], mark: "line", color: "kind" });
+        expect(result.svg).toContain("<svg");
+        expect((result.spec.encoding as any).x).toMatchObject({ field: "day", type: "temporal" });
+        expect((result.spec.encoding as any).color).toMatchObject({ field: "kind", type: "nominal" });
+        expect(result.truncated).toBe(false);
+    });
+
+    test("sql without the duckdb plugin and neither rows nor sql are refused", async () => {
+        await expect(chart(makeCtx(), null, { sql: "SELECT 1" })).rejects.toThrow("needs the duckdb plugin");
+        await expect(chart(makeCtx(), null, {})).rejects.toThrow("give rows or sql");
+    });
+
+    test("caps rows at maxRows and says so", async () => {
+        const result = await chart(makeCtx(), null, { rows: [{ a: "x", b: 1 }, { a: "y", b: 2 }, { a: "z", b: 3 }], maxRows: 2 });
+        expect(result.rows.length).toBe(2);
+        expect(result.truncated).toBe(true);
+        expect(result.rowCount).toBe(3);
     });
 });

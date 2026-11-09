@@ -13,16 +13,21 @@
     "src": "src",
     "label": "Vega-Lite",
     "icon": "ph-chart-bar",
-    "optional": true,
     "description": "Render charts as inline SVG from Vega-Lite specifications and local CSV, JSON, or NDJSON data."
   },
   "dependencies": {
     "vega": "^6.1.2",
     "vega-lite": "^6.4.3"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/hyper-code-harness/vegalite"
+  },
+  "devDependencies": {
+    "duckdb": "github:hyper-code-harness/duckdb#cb78c78cfaac0a55842cb4dafc75807e47a89a05"
+  },
+  "scripts": {
+    "test": "bun ${HYPER_CODE:-../hyper-code}/script/plugin-test.ts ."
   }
 }
